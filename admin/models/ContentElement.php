@@ -62,12 +62,16 @@ class ContentElement
 	private $_keywordFilter = null;
 	private $_categoryFilter = null;
 	private $_authorFilter = null;
+	private $_defaultlang = null;
 
 	/** Standard constructor, which loads already standard information
 	 * for easy and direct access
 	 */
 	public function __construct($xmlDoc)
-	{
+	{	
+		$jf = JoomFishManager::getInstance();
+		$this->_defaultlang = $jf->getDefaultLanguage();
+		
 		$this->_xmlFile = $xmlDoc;
 
 		if (isset($this->_xmlFile))
@@ -443,7 +447,7 @@ class ContentElement
 			}
 
 			// TODO set source language
-			$where[] = 'c.language="*"';
+			$where[] = '(c.language="*" OR c.language='. $db->quote($this->_defaultlang).')';
 
 			foreach ($contentTable->Fields as $tableField)
 			{
@@ -695,7 +699,7 @@ class ContentElement
 			else
 			{
 				// TODO we need a source language for the count!
-				$where[] = "language_id='*'";
+				$where[] = "(language_id='*' OR language_id=". $db->quote($this->_defaultlang).')';
 			}
 
 			foreach ($filters as $filter)

@@ -529,7 +529,8 @@ class TranslationObject implements iJFTranslatable
 		else
 		{
 			if (isset($row))
-			{
+			{	
+				$noprehandlerrow = clone $row;
 				// Check fields and their state
 				for ($i = 0; $i < count($elementTable->Fields); $i++)
 				{
@@ -550,15 +551,15 @@ class TranslationObject implements iJFTranslatable
 					{
 						$fieldContent = new jfContent($db);
 						// id for translation
-						$fieldContent->id = $row->id;
+						$fieldContent->id = intval($row->jfc_id);
 						$fieldContent->language_id = $this->language_id;
-						$fieldContent->reference_id = intval($row->jfc_id);
+						$fieldContent->reference_id = $row->id;
 						$fieldContent->reference_table = $elementTable->Name;
 						$fieldContent->reference_field = $fieldname;
 						if (isset($row->$transfieldname))
 						{
 							$fieldContent->value = $row->$transfieldname;
-							if (!empty($row->$fieldname) && empty($row->$transfieldname)) {
+							if (!empty($row->$fieldname) && empty($row->$transfieldname) && empty($noprehandlerrow->$transfieldname)) {
 								$this->_untraslatedFields ++;
 							}
 							
@@ -799,18 +800,20 @@ class TranslationObject implements iJFTranslatable
 				
 				// Save the translation map 
 				$this->generateTranslationMap($table, $isNew, $this->contentElement->getTableName(), $elementTable);
-				/*
-				// contient has its own plugin!
+	
 				if ($tableclass == "Menu")
 				{
 					$dispatcher = JDispatcher::getInstance();
-					$dispatcher->trigger("onMenuAfterJFSave", array("com_menu,menu", &$table, $isNew, $elementTable));
+					$dispatcher->trigger("onMenuAfterSave", array("com_menu,menu", &$table, $isNew, $elementTable));
 				}
 				else if ($tableclass == "Module")
 				{
 					$dispatcher = JDispatcher::getInstance();
-					$dispatcher->trigger("onModuleAfterJFSave", array("com_modules,module", &$table, $isNew, $elementTable));
-				}
+					$dispatcher->trigger("onModuleAfterSave", array("com_modules,module", &$table, $isNew, $elementTable));
+				}			
+				
+				/*
+				// contient has its own plugin!
 				else if ($tableclass == "Content")
 				{
 					$dispatcher = JDispatcher::getInstance();
